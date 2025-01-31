@@ -3,9 +3,10 @@ from pyspark.sql.dataframe import DataFrame
 from pyspark.sql.functions import from_json, col, explode
 from pyspark.sql.types import StructType, StructField, ArrayType, StringType
 from pyspark.sql import SparkSession
+import time
 
 
-class UpdateMode(BaseStreamApp):
+class CompleteMode(BaseStreamApp):
     def __init__(self, app_name):
         super().__init__(app_name)
 
@@ -22,6 +23,7 @@ class UpdateMode(BaseStreamApp):
             .format('kafka') \
             .option('kafka.bootstrap.servers','kafka01:9092,kafka02:9092,kafka03:9092') \
             .option('subscribe','lesson.ch16_4.output-mode') \
+            .option('startingOffsets','earliest') \
             .option('maxOffsetsPerTrigger','1') \
             .load() \
             .selectExpr('CAST(key AS STRING) AS KEY',
@@ -32,7 +34,7 @@ class UpdateMode(BaseStreamApp):
 
         query = df.writeStream \
             .foreachBatch(lambda df, epoch: self.for_each_batch(df, epoch, spark)) \
-            .outputMode('update') \
+            .outputMode('complete') \
             .option("checkpointLocation", self.kafka_offset_dir) \
             .start()
 
@@ -40,8 +42,9 @@ class UpdateMode(BaseStreamApp):
 
     def _for_each_batch(self, df: DataFrame, epoch_id: int, spark: SparkSession):
         df.show(truncate=False)
+        time.sleep(10)
 
 
 if __name__ == '__main__':
-    update_mode = UpdateMode(app_name='update_mode')
-    update_mode.main()
+    complete_mode = CompleteMode(app_name='complete_mode')
+    complete_mode.main()
