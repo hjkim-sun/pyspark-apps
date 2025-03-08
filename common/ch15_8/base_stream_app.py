@@ -68,7 +68,7 @@ class BaseStreamApp():
         pass
 
     def offset_commit(self, epoch_id):
-        offset_info = self.get_popen_rslt(f'hdfs dfs -cat /home/spark/kafka_offsets/{self.app_name}/offsets/{epoch_id}')
+        offset_info = self.get_popen_rslt(f'/engine/hadoop-3.3.6/bin/hdfs dfs -cat /home/spark/kafka_offsets/{self.app_name}/offsets/{epoch_id}')
 
         offset_info_dict = json.loads(offset_info.split('\n')[2])  # 첫 번째 라인은 v1, 두 번째 라인은 옵션list, 세 번째 라인이 offset 정보
         offset_target_lst = []
